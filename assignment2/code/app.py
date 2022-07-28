@@ -6,29 +6,34 @@ from flask_jwt import JWT, jwt_required
 from flask_restful import Api
 
 from db import db
-from security import authenticate, identity
 from models.sales import SalesModel
-from resources.customer import CustomerSignIn
+from resources.customer import CustomerRegister
 from resources.product import ProductList
-from resources.sales import PurchaseList, Sales
-
+from resources.sales import (
+    Average_sales_per_customer,
+    PurchaseList,
+    Sales,
+    TotalSales,
+    UniqueVisitors,
+)
+from security import authenticate, identity
 
 app=Flask(__name__)
-app.secret_key= 'shreyan'
+app.secret_key= '123'
 api=Api(app)
+
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
 app.config['JWT_EXPIRATION_DELTA'] = timedelta(seconds=2000)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True
 
-@app.before_first_request
-def create_tables():
-    db.create_all()
-
 
 # api endpoint for customer signing in the site for the first time
-api.add_resource(CustomerSignIn,'/sign_in')
+api.add_resource(CustomerRegister,'/register')
 
 
 # customer login and check for valid customer
@@ -40,49 +45,26 @@ jwt=JWT(app, authenticate, identity)
 api.add_resource(Sales,'/purchase')
 
 
+
 # api endpoint for total sales
-@app.route('/total_sales')
-@jwt_required()
-def total_sales():
-    return jsonify({"message": f"Total number of sales for the day is   {len(SalesModel.find_by_date(date.today()).filter(SalesModel.sale_amount != 0).all())}."})
-
-
-# api end point for unique visitors
-@app.route('/uniquevisitors')
-@jwt_required()
-def unique_visitors():
-    visitors = SalesModel.find_by_date(date.today()).all()
-    unique_visitor = {}
-    for object in visitors:
-        if object.user_id in unique_visitor.keys():
-            unique_visitor[object.user_id]+=1
-        else:
-            unique_visitor[object.user_id] = 1
-    return jsonify({"message":f"Total no of unique visitors in a day {len(unique_visitor)}"})
-
-
-# api endpoint for avg_sales_per_customer
-@app.route('/avg_sales_per_customer')
-@jwt_required()
-def avg_sales_per_customer():
-    visitors = SalesModel.find_by_date(date.today()).all()
-    unique_visitor = {}
-    total_sales=[]
-    for object in visitors:
-        total_sales.append(object.sale_amount)
-        if object.user_id in unique_visitor.keys():
-            unique_visitor[object.user_id]+=1
-        else:
-            unique_visitor[object.user_id] = 1
-    var=sum(total_sales)/len(unique_visitor)
-    return jsonify({"message": f"Average Sales Per Customer is {var}."})
-
-
-# api endpoint for list_of_daily_display
-api.add_resource(PurchaseList,'/daily_sales_list')
+api.add_resource(TotalSales,'/total_sales')
 
 # api endpoint for listing of product
 api.add_resource(ProductList,'/product_list')
+
+
+# api end point for unique visitors
+api.add_resource(UniqueVisitors,'/uniquevisitors')
+
+
+
+# api endpoint for avg_sales_per_customer
+api.add_resource(Average_sales_per_customer,'/avg_sales_per_customer')
+
+
+# api endpoint for list_of_daily_displays
+api.add_resource(PurchaseList,'/daily_sales_list')
+
 
 if __name__=='__main__':
     db.init_app(app)

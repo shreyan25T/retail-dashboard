@@ -14,8 +14,7 @@ class SalesModel(db.Model):
         self.product_id=product_id
         self.sale_amount=sale_amount
         self.sale_date=sale_date
-        # login time implementation
-        # logout time implementation
+       
 
     def json(self):
         return {"user_id":self.user_id,"price":self.sale_amount}

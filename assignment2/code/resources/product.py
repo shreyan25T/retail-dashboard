@@ -27,7 +27,7 @@ class ProductList(Resource):
         prod8.save_to_db()
         prod9 = ProductModel(109, ' Casual Jwellery')
         prod9.save_to_db()
-        prod10 = ProductModel(1010, 'Tunics')
+        prod10 = ProductModel(110, 'Tunics')
         prod10.save_to_db()
 
         return {"product_items": [x.json() for x in ProductModel.query.all()]}

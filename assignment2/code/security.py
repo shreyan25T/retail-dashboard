@@ -1,18 +1,18 @@
-from hmac import compare_digest
 from datetime import date
+from hmac import compare_digest
+
 from models.customer import CustomerModel
 from models.sales import SalesModel
-from resources.customer import CustomerSignIn
 
 
 def authenticate(username,password):
+    # not able to provide validation by id
     user= CustomerModel.find_by_username(username)
-    if user and compare_digest(user.password,password) :
+
+    if user and compare_digest(user.password,password):
         visitor=SalesModel(user.id,0,0,date.today())
         visitor.save_to_db()
         return user
-    else:
-        None
 
 def identity(payload):
     user_id=payload['identity']
