@@ -1,5 +1,5 @@
 from db import db
-
+from models.product import ProductModel
 
 class SalesModel(db.Model):
     __tablename__ ='sales'
@@ -14,11 +14,11 @@ class SalesModel(db.Model):
         self.product_id=product_id
         self.sale_amount=sale_amount
         self.sale_date=sale_date
-       
+
 
     def json(self):
-        return {"user_id":self.user_id,"price":self.sale_amount}
-
+        result= db.session.query(SalesModel.product_id,ProductModel.prod_des).filter(SalesModel.product_id == ProductModel.product_id).all()
+        return {"product_id":self.product_id,"user_id":self.user_id, "sale_amount":self.sale_amount ,"product_des":[x.prod_des for x in result if x.product_id==self.product_id][0] }
     @classmethod
     def find_by_date(cls,date):
         return cls.query.filter_by(sale_date=date)
